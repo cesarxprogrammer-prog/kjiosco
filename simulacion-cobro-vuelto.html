@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Punto de venta | Efectivo</title>
+<link rel="stylesheet" href="./simulacion-cobro-vuelto.css">
+</head>
+<body>
+<div class="app">
+<header id="global-header">
+  <div class="header-left"><div class="menu-wrap"><button type="button" class="secondary menu-button" id="menu-toggle" aria-label="Abrir menú" aria-expanded="false">☰</button><nav class="menu-dropdown hidden" id="main-menu" aria-label="Menú principal"><button type="button" id="menu-sales">🛒 Ventas</button><button type="button" id="menu-stock">💵 Existencias</button><button type="button" id="menu-cash-movements">🔄 Movimientos de caja</button><button type="button" id="menu-shift">🧮 Turno de caja</button><button type="button" id="menu-products">🧾 Productos</button><button type="button" id="menu-product-stock">📦 Stock de productos</button><button type="button" id="menu-clients">👤 Clientes</button><button type="button" id="menu-categories">🏷️ Categorías</button><button type="button" id="menu-receivables">📒 Cuentas por cobrar</button><button type="button" id="menu-reports">📊 Reportes y respaldo</button><button type="button" id="menu-providers">👥 Proveedores</button><button type="button" id="menu-purchases">🧾 Compras</button></nav></div><div><h1 id="header-title">Punto de venta</h1><div class="muted">Venta de productos y cobro en efectivo</div></div></div>
+  <span class="tag" id="cash-tag">Caja activa</span>
+</header>
+
+<main id="store-view">
+  <div class="grid">
+    <section class="panel">
+      <h2>Productos</h2>
+      <div class="category-switch" role="group" aria-label="Tipo de producto">
+        <button type="button" class="category-button active" id="select-chicos" aria-pressed="true">Productos chicos</button>
+        <button type="button" class="category-button" id="select-peso" aria-pressed="false">Por peso</button>
+      </div>
+      <div id="section-chicos" class="catalog-section"><div id="catalog-chicos" class="catalog"></div></div>
+      <div id="section-peso" class="catalog-section hidden"><div id="catalog-peso" class="catalog"></div></div>
+    </section>
+    <aside class="panel">
+      <div class="summary"><span>Total</span><span id="sale-total">$0</span></div>
+      <button type="button" class="secondary wide" id="toggle-cart-open" aria-expanded="false">Ver carrito (0)</button>
+      <button type="button" class="primary wide" id="start-payment" disabled>Cobrar</button>
+    </aside>
+  </div>
+  <details class="sales-history panel">
+    <summary id="sales-history-title">Historial de ventas</summary>
+    <div id="sales-history" class="sales-history-content"></div>
+  </details>
+</main>
+
+<main id="stock-view" class="hidden">
+  <div class="stock-view-header"><h2>Existencias de efectivo en caja</h2><button type="button" class="secondary" id="stock-back">← Volver a ventas</button></div>
+  <div id="cash-stock"></div>
+</main>
+
+<main id="categories-view" class="hidden">
+  <div class="stock-view-header"><h2>Categorías de productos</h2><button type="button" class="secondary" id="categories-back">← Volver a ventas</button></div>
+  <div id="categories-area"></div>
+</main>
+
+<main id="reports-view" class="hidden">
+  <div class="stock-view-header"><h2>Reportes y respaldo</h2><button type="button" class="secondary" id="reports-back">← Volver a ventas</button></div>
+  <div id="reports-area"></div>
+</main>
+
+<main id="receivables-view" class="hidden">
+  <div class="stock-view-header"><h2>Cuentas por cobrar</h2><button type="button" class="secondary" id="receivables-back">← Volver a ventas</button></div>
+  <div id="receivables-area"></div>
+</main>
+
+<main id="clients-view" class="hidden">
+  <div class="stock-view-header"><h2>Clientes</h2><button type="button" class="secondary" id="clients-back">← Volver a ventas</button></div>
+  <div id="clients-area"></div>
+</main>
+
+<main id="providers-view" class="hidden">
+  <div class="stock-view-header"><h2>Proveedores</h2><button type="button" class="secondary" id="providers-back">← Volver a ventas</button></div>
+  <div id="providers-area"></div>
+</main>
+
+<main id="procurement-view" class="hidden">
+  <div class="stock-view-header"><h2>Compras</h2><button type="button" class="secondary" id="procurement-back">← Volver a ventas</button></div>
+  <div id="purchases-area"></div>
+</main>
+
+
+<div id="purchase-cart-overlay" class="cart-overlay hidden" aria-hidden="true">
+  <div class="cart-backdrop" id="purchase-cart-backdrop"></div>
+  <section class="panel cart-dialog purchase-cart-dialog" role="dialog" aria-modal="true" aria-labelledby="purchase-cart-dialog-title">
+    <div class="cart-dialog-header">
+      <h2 id="purchase-cart-dialog-title">Carrito de la compra</h2>
+      <div class="cart-dialog-header-actions"><button type="button" class="danger" id="clear-purchase-cart" disabled>Vaciar</button><button type="button" class="secondary" id="purchase-cart-close">Plegar</button></div>
+    </div>
+    <div id="purchase-cart-items" class="cart-dialog-items"></div>
+    <div id="purchase-cart-total" class="summary"></div>
+  </section>
+</div>
+
+<main id="products-view" class="hidden">
+  <div class="stock-view-header"><h2>Productos</h2><button type="button" class="secondary" id="products-back">← Volver a ventas</button></div>
+  <div id="products-area"></div>
+</main>
+
+<main id="product-stock-view" class="hidden">
+  <div class="stock-view-header"><h2>Existencias de productos</h2><button type="button" class="secondary" id="product-stock-back">← Volver a ventas</button></div>
+  <div id="product-stock-list"></div>
+  <details class="panel stock-movement-history"><summary>Movimientos de stock</summary><div id="product-stock-movements"></div></details>
+</main>
+
+<main id="movements-view" class="hidden">
+  <div class="stock-view-header"><h2>Movimientos de caja</h2><button type="button" class="secondary" id="movements-back">← Volver a ventas</button></div>
+  <div id="cash-movement-summary" class="panel"></div>
+  <div id="cash-movement-list"></div>
+</main>
+
+<main id="shift-view" class="hidden">
+  <div class="stock-view-header"><h2>Turno de caja</h2><button type="button" class="secondary" id="shift-back">← Volver a ventas</button></div>
+  <div id="shift-content"></div>
+  <section class="panel"><h3>Turnos anteriores</h3><div id="shift-history"></div></section>
+</main>
+
+<div id="product-editor-overlay" class="cart-overlay product-editor-overlay hidden" aria-hidden="true">
+  <div class="cart-backdrop" id="product-editor-backdrop"></div>
+  <section class="panel cart-dialog product-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="product-editor-title">
+    <div class="cart-dialog-header"><h2 id="product-editor-title">Producto</h2><button type="button" class="secondary" id="product-editor-close">Cancelar</button></div>
+    <div id="product-editor-form-host"></div>
+  </section>
+</div>
+
+<div id="cart-overlay" class="cart-overlay hidden" aria-hidden="true">
+  <div class="cart-backdrop" id="cart-backdrop"></div>
+  <section class="panel cart-dialog" role="dialog" aria-modal="true" aria-labelledby="cart-dialog-title">
+    <div class="cart-dialog-header">
+      <h2 id="cart-dialog-title">Carrito de la venta</h2>
+      <div class="cart-dialog-header-actions"><button type="button" class="danger" id="clear-sale-cart" disabled>Vaciar</button><button type="button" class="secondary" id="toggle-cart-close">Plegar</button></div>
+    </div>
+    <div id="cart"></div>
+  </section>
+</div>
+
+<main id="payment-view" class="hidden">
+  <section class="panel" id="sale-panel">
+    <div class="cash-heading"><span></span><button type="button" class="secondary" id="back-to-sale">← Volver a la venta</button></div>
+    <div class="amount-row" id="monto-a-cobrar">Monto a cobrar: <strong id="payment-total">$0</strong></div>
+    <label for="sale-client" class="muted">Cliente (opcional)</label>
+    <select id="sale-client" aria-label="Cliente de la venta"><option value="">Venta sin cliente</option></select>
+    <div id="sale-method-wrap"><div class="muted">Medio de pago</div><div class="category-switch payment-methods" role="group" aria-label="Medio de pago">
+      <button type="button" class="category-button active" data-sale-method="efectivo" aria-pressed="true">Efectivo</button><button type="button" class="category-button" data-sale-method="transferencia" aria-pressed="false">Transferencia</button><button type="button" class="category-button" data-sale-method="mercado_pago" aria-pressed="false">Mercado Pago</button><button type="button" class="category-button" data-sale-method="cuenta_corriente" aria-pressed="false">Fiado</button>
+    </div></div>
+    <button type="button" class="primary wide hidden" id="confirm-digital-sale">Confirmar pago</button>
+    <div class="step" id="estado"></div>
+  </section>
+
+  <section id="change-bills-section">
+    <h2 id="titulo-disponibles" class="hidden"></h2>
+    <div id="acciones-vuelto" class="change-actions hidden">
+      <button type="button" class="secondary" id="toggle-billetes">Mostrar billetes disponibles</button>
+      <button type="button" class="auto" id="generar-vuelto" title="Generar automáticamente priorizando billetes de mayor valor" aria-label="Generar vuelto automáticamente">🤖 Generar con bot</button>
+    </div>
+    <div id="disponibles"></div>
+  </section>
+
+  <section class="panel" id="payment-selection">
+    <h2 id="titulo-seleccion">2. Dinero recibido</h2>
+    <div id="seleccionados"></div>
+    <div class="total-row">
+      <div id="total">Total recibido: $0</div>
+      <div class="actions">
+        <button type="button" class="secondary icon-button" id="deshacer" title="Deshacer último" aria-label="Deshacer último">↩️</button>
+        <button type="button" class="danger icon-button" id="vaciar" title="Vaciar selección" aria-label="Vaciar selección">🗑️</button>
+      </div>
+    </div>
+    <div id="detalle"></div>
+    <button type="button" class="primary main-action" id="aceptar-ingreso" disabled>Aceptar ingreso</button>
+    <button type="button" class="primary main-action hidden" id="aprobar-vuelto" disabled>Aprobar vuelto</button>
+    <div id="mensaje"></div>
+  </section>
+</main>
+</div>
+
+<script src="./js/01-estado-y-referencias.js"></script>
+<script src="./js/02-reglas-de-negocio.js"></script>
+<script src="./js/03-catalogo-y-carrito.js"></script>
+<script src="./js/04-navegacion-y-categorias.js"></script>
+<script src="./js/05-clientes-y-cuentas.js"></script>
+<script src="./js/06-persistencia.js"></script>
+<script src="./js/07-reportes-y-directorios.js"></script>
+<script src="./js/08-compras.js"></script>
+<script src="./js/09-caja-inventario-e-historial.js"></script>
+<script src="./js/10-cobros.js"></script>
+<script src="./js/11-gestion-productos.js"></script>
+<script src="./js/12-eventos-y-arranque.js"></script>
+</body>
+</html>
